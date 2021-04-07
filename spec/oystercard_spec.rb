@@ -26,6 +26,7 @@ describe Oystercard do
 
   context '#injourney' do
     it 'should allow tell you if we are travelling' do
+      subject.top_up(10)
       subject.touch_in
       expect(subject).to be_in_journey
     end
@@ -51,6 +52,10 @@ describe Oystercard do
       subject.top_up(20)
       expect {subject.deduct 1 }.to change{ subject.balance }.by -1
     end
+  end
+
+  it "prevents touching in when balance is below minimum fare" do
+    expect { subject.touch_in }.to raise_error("Error: insufficient funds")
   end
 
 end
