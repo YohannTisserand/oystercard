@@ -54,35 +54,34 @@ describe Oystercard do
   it 'deduce an amout on touch_out' do
     expect {subject.touch_out(exit_station)}.to change {subject.balance}.by (-Oystercard::MIN_FARE)
   end
-  
-  it "remembers the entry station after #touch_in" do
-    subject.top_up(10)
-    subject.touch_in(entry_station)
-    expect(subject.entry_station).to eq entry_station
-  end
 
-  it "forgets the entry station after #touch_out" do
-    subject.top_up(10)
-    subject.touch_in(entry_station)
-    subject.touch_out(exit_station)
-    expect(subject.entry_station).to eq nil
-  end
+  context '#journey' do
+    before do
+      subject.top_up(10)
+      subject.touch_in(entry_station)
+    end
 
-  it 'remembers exit_station journeys' do
-    subject.top_up(10)
-    subject.touch_in(entry_station)
-    subject.touch_out(exit_station)
-    expect(subject.exit_station).to eq exit_station
-  end
+    it "remembers the entry station after #touch_in" do
+      expect(subject.entry_station).to eq entry_station
+    end
 
-  it 'it checks if there is any jourmeys' do
-    expect(subject.journeys).to be_empty
-  end
+    it "forgets the entry station after #touch_out" do
+      subject.touch_out(exit_station)
+      expect(subject.entry_station).to eq nil
+    end
 
-  it 'stores the journeys' do
-    subject.top_up(10)
-    subject.touch_in(entry_station)
-    subject.touch_out(exit_station)
-    expect(subject.journeys).not_to be_empty
+    it 'remembers exit_station journeys' do
+      subject.touch_out(exit_station)
+      expect(subject.exit_station).to eq exit_station
+    end
+
+    it 'it checks if there is any jourmeys' do
+      expect(subject.journeys).to be_empty
+    end
+
+    it 'stores the journeys' do
+      subject.touch_out(exit_station)
+      expect(subject.journeys).not_to be_empty
+    end
   end
 end
