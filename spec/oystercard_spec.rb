@@ -1,7 +1,8 @@
 require 'oystercard'
 
 describe Oystercard do 
-  let(:station)  { double :entry_station }
+  let(:entry_station)  { double :station }
+  let(:exit_station) { double :station }
 
   it { is_expected.to respond_to(:in_journey?) }
   it { is_expected.to respond_to(:touch_in).with(1).argument }
@@ -28,12 +29,12 @@ describe Oystercard do
   context '#injourney' do
     it 'should allow tell you if we are travelling' do
       subject.top_up(10)
-      subject.touch_in(station)
+      subject.touch_in(entry_station)
       expect(subject).to be_in_journey
     end
 
     it 'should tells you if you are not travelling' do
-      subject.touch_out
+      subject.touch_out(exit_station)
       expect(subject).not_to be_in_journey
     end
   end
@@ -47,23 +48,41 @@ describe Oystercard do
   end
 
   it "prevents touching in when balance is below minimum fare" do
-    expect { subject.touch_in(station) }.to raise_error("Error: insufficient funds")
+    expect { subject.touch_in(entry_station) }.to raise_error("Error: insufficient funds")
   end
 
   it 'deduce an amout on touch_out' do
-    expect {subject.touch_out}.to change {subject.balance}.by (-Oystercard::MIN_FARE)
+    expect {subject.touch_out(exit_station)}.to change {subject.balance}.by (-Oystercard::MIN_FARE)
   end
   
   it "remembers the entry station after #touch_in" do
     subject.top_up(10)
-    subject.touch_in(station)
-    expect(subject.entry_station).to eq station
+    subject.touch_in(entry_station)
+    expect(subject.entry_station).to eq entry_station
   end
 
   it "forgets the entry station after #touch_out" do
     subject.top_up(10)
-    subject.touch_in(station)
-    subject.touch_out
+    subject.touch_in(entry_station)
+    subject.touch_out(exit_station)
     expect(subject.entry_station).to eq nil
+  end
+
+  it 'remembers exit_station journeys' do
+    subject.top_up(10)
+    subject.touch_in(entry_station)
+    subject.touch_out(exit_station)
+    expect(subject.exit_station).to eq exit_station
+  end
+
+  it 'it checks if there is any jourmeys' do
+    expect(subject.journeys).to be_empty
+  end
+
+  it 'stores the journeys' do
+    subject.top_up(10)
+    subject.touch_in(entry_station)
+    subject.touch_out(exit_station)
+    expect(subject.journeys).not_to be_empty
   end
 end
